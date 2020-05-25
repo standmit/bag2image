@@ -1,0 +1,9 @@
+<launch>
+    <arg name="file" />
+    <arg name="topic" />
+
+    <node name="extractor" pkg="bag2image" type="extract_images" output="screen" required="true">
+        <param name="file" value="$(arg file)" />
+        <param name="topic" value="$(arg topic)" />
+    </node>
+</launch>
