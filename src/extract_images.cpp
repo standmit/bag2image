@@ -1,6 +1,7 @@
 #include <ros/ros.h>
 #include <rosbag/bag.h>
 #include <rosbag/view.h>
+#include <sensor_msgs/Image.h>
 #include <sensor_msgs/CompressedImage.h>
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/opencv.hpp>
@@ -21,9 +22,15 @@ int main(int argc, char **argv) {
     const std::string topic_name=nh.param<std::string>("topic", "");
     topics.emplace_back(topic_name);
     rosbag::View view(bag, rosbag::TopicQuery(topics));
+    bool compressed;
     {
         const std::string& topic_type = view.begin()->getDataType();
-        if (topic_type != "sensor_msgs/CompressedImage") {
+
+        if (topic_type == "sensor_msgs/Image") {
+            compressed = false;
+        } else if (topic_type == "sensor_msgs/CompressedImage") {
+            compressed = true;
+        } else {
             ROS_FATAL("Topic %s has unsupported type %s", topic_name.c_str(), topic_type.c_str());
             return 3;
         }
@@ -37,16 +44,30 @@ int main(int argc, char **argv) {
         if (not ros::ok())
             break;
         i++;
-        sensor_msgs::CompressedImage::ConstPtr msg = instance.instantiate<sensor_msgs::CompressedImage>();
-        if (msg != NULL) {
-            cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(msg);
-            std::ostringstream ss;
-            ss << std::setw(9) << std::setfill('0') << msg->header.stamp.nsec;
-            cv::imwrite(std::to_string(msg->header.stamp.sec) + ss.str() + ".jpg", cv_image->image);
+        if (compressed) {
+            sensor_msgs::CompressedImage::ConstPtr msg = instance.instantiate<sensor_msgs::CompressedImage>();
+            if (msg != NULL) {
+                cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(msg);
+                std::ostringstream ss;
+                ss << std::setw(9) << std::setfill('0') << msg->header.stamp.nsec;
+                cv::imwrite(std::to_string(msg->header.stamp.sec) + ss.str() + ".png", cv_image->image);
+            } else {
+                ROS_WARN("Corrupted message");
+                corrupted++;
+                continue;
+            }
         } else {
-            ROS_WARN("Corrupted message");
-            corrupted++;
-            continue;
+            sensor_msgs::Image::ConstPtr msg = instance.instantiate<sensor_msgs::Image>();
+            if (msg != NULL) {
+                cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(msg);
+                std::ostringstream ss;
+                ss << std::setw(9) << std::setfill('0') << msg->header.stamp.nsec;
+                cv::imwrite(std::to_string(msg->header.stamp.sec) + ss.str() + ".png", cv_image->image);
+            } else {
+                ROS_WARN("Corrupted message");
+                corrupted++;
+                continue;
+            }
         }
         ROS_INFO_DELAYED_THROTTLE(1.0, "%lu/%lu (%3.1f%%)", i, total, static_cast<double>(i) / static_cast<double>(total) * 100.0);
     }
