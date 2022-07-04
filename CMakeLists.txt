@@ -18,6 +18,10 @@ find_package(catkin REQUIRED COMPONENTS
 # find_package(Boost REQUIRED COMPONENTS system)
 find_package(OpenCV REQUIRED)
 
+find_package(Boost REQUIRED COMPONENTS
+    program_options
+)
+
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
@@ -120,6 +124,7 @@ include_directories(
 # include
   ${OpenCV_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -153,7 +158,7 @@ include_directories(
 # )
 
 add_executable(extract_images src/extract_images.cpp)
-target_link_libraries(extract_images ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
+target_link_libraries(extract_images ${OpenCV_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
 #############
 ## Install ##
