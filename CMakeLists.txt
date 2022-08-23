@@ -160,6 +160,10 @@ include_directories(
 add_executable(extract_images src/extract_images.cpp)
 target_link_libraries(extract_images ${OpenCV_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
+add_executable(extract_imu src/extract_imu.cpp)
+add_dependencies(extract_imu ${catkin_EXPORTED_TARGETS})
+target_link_libraries(extract_imu ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
 #############
 ## Install ##
 #############
