@@ -66,6 +66,7 @@ int main(int argc, char **argv) {
     std::cout << "nsec\tlat\tlon\talt";
     std::cout << "\tcovariance";
     std::cout << std::endl;
+    std::cout.precision(9);
     
     for (rosbag::MessageInstance const instance: view) {
         const auto msg = instance.instantiate<sensor_msgs::NavSatFix>();
