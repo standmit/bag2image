@@ -164,6 +164,10 @@ add_executable(extract_imu src/extract_imu.cpp)
 add_dependencies(extract_imu ${catkin_EXPORTED_TARGETS})
 target_link_libraries(extract_imu ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
+add_executable(extract_gps src/extract_gps.cpp)
+add_dependencies(extract_gps ${catkin_EXPORTED_TARGETS})
+target_link_libraries(extract_gps ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
 #############
 ## Install ##
 #############
