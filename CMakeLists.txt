@@ -168,6 +168,10 @@ add_executable(extract_gps src/extract_gps.cpp)
 add_dependencies(extract_gps ${catkin_EXPORTED_TARGETS})
 target_link_libraries(extract_gps ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
+add_executable(extract_compass src/extract_compass.cpp)
+add_dependencies(extract_compass ${catkin_EXPORTED_TARGETS})
+target_link_libraries(extract_compass ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
 #############
 ## Install ##
 #############
