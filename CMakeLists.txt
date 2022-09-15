@@ -9,9 +9,13 @@ project(bag2image)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
     cv_bridge
+    geographic_msgs
+    geometry_msgs
+    nav_msgs
     rosbag
     roscpp
     sensor_msgs
+    std_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -171,6 +175,34 @@ target_link_libraries(extract_gps ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 add_executable(extract_compass src/extract_compass.cpp)
 add_dependencies(extract_compass ${catkin_EXPORTED_TARGETS})
 target_link_libraries(extract_compass ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
+add_executable(extract_float64 src/extract_float64.cpp)
+add_dependencies(extract_float64 ${catkin_EXPORTED_TARGETS})
+target_link_libraries(extract_float64 ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
+add_executable(extract_posestamped src/extract_posestamped.cpp)
+add_dependencies(extract_posestamped ${catkin_EXPORTED_TARGETS})
+target_link_libraries(extract_posestamped ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
+add_executable(extract_geopointstamped src/extract_geopointstamped.cpp)
+add_dependencies(extract_geopointstamped ${catkin_EXPORTED_TARGETS})
+target_link_libraries(extract_geopointstamped ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
+add_executable(extract_odometry src/extract_odometry.cpp)
+add_dependencies(extract_odometry ${catkin_EXPORTED_TARGETS})
+target_link_libraries(extract_odometry ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
+add_executable(extract_twiststamped src/extract_twiststamped.cpp)
+add_dependencies(extract_twiststamped ${catkin_EXPORTED_TARGETS})
+target_link_libraries(extract_twiststamped ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
+add_executable(extract_uint32 src/extract_uint32.cpp)
+add_dependencies(extract_uint32 ${catkin_EXPORTED_TARGETS})
+target_link_libraries(extract_uint32 ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
+add_executable(extract_posewithcovariancestamped src/extract_posewithcovariancestamped.cpp)
+add_dependencies(extract_posewithcovariancestamped ${catkin_EXPORTED_TARGETS})
+target_link_libraries(extract_posewithcovariancestamped ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
 #############
 ## Install ##
