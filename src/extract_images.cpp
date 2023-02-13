@@ -2,6 +2,7 @@
 #include <rosbag/view.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/CompressedImage.h>
+#include <sensor_msgs/image_encodings.h>
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/opencv.hpp>
 #include <boost/program_options.hpp>
@@ -14,6 +15,9 @@ constexpr char OPT_TOPIC[]     = "topic";
 constexpr char OPT_DIRECTORY[] = "directory";
 constexpr char OPT_BAG[]       = "bag";
 constexpr char OPT_HELP[]      = "help";
+
+
+namespace enc = sensor_msgs::image_encodings;
 
 
 int main(int argc, char **argv) {
@@ -86,13 +90,43 @@ int main(int argc, char **argv) {
     const std::string output_dir = vm[OPT_DIRECTORY].as<std::string>();
     for (rosbag::MessageInstance const instance: view) {
         i++;
-        const cv_bridge::CvImagePtr cv_image = compressed ?
-            cv_bridge::toCvCopy(instance.instantiate<sensor_msgs::CompressedImage>()) :
-            cv_bridge::toCvCopy(instance.instantiate<sensor_msgs::Image>());
+        cv::Mat image;
+        std::string encoding;
+        ros::Time stamp;
+        if (compressed) {
+            const auto msg = instance.instantiate<sensor_msgs::CompressedImage>();
+            image = cv::imdecode(
+                cv::Mat_<uchar>(
+                    1,
+                    msg->data.size(),
+                    const_cast<uchar*>(&(msg->data[0]))
+                ),
+                cv::IMREAD_UNCHANGED
+            );
+            encoding = msg->format.substr(0, msg->format.find(';'));
+            stamp = msg->header.stamp;
+        } else {
+            const auto msg = instance.instantiate<sensor_msgs::Image>();
+            image = cv_bridge::toCvCopy(msg)->image;
+            encoding = msg->encoding;
+            stamp = msg->header.stamp;
+        }
+        if (enc::isBayer(encoding)) {
+            int code = -1;
+            if (encoding == enc::BAYER_RGGB8 || encoding == enc::BAYER_RGGB16)
+                code = cv::COLOR_BayerBG2BGR;
+            else if (encoding == enc::BAYER_BGGR8 || encoding == enc::BAYER_BGGR16)
+                code = cv::COLOR_BayerRG2BGR;
+            else if (encoding == enc::BAYER_GBRG8 || encoding == enc::BAYER_GBRG16)
+                code = cv::COLOR_BayerGR2BGR;
+            else if (encoding == enc::BAYER_GRBG8 || encoding == enc::BAYER_GRBG16)
+                code = cv::COLOR_BayerGB2BGR;
+            cv::cvtColor(image, image, code);
+        }
         std::ostringstream ss_sec, ss_nsec;
-        ss_sec << std::setw(9) << std::setfill('0') << cv_image->header.stamp.sec;
-        ss_nsec << std::setw(9) << std::setfill('0') << cv_image->header.stamp.nsec;
-        cv::imwrite(output_dir + "/" + ss_sec.str() + ss_nsec.str() + ".png", cv_image->image);
+        ss_sec << std::setw(9) << std::setfill('0') << stamp.sec;
+        ss_nsec << std::setw(9) << std::setfill('0') << stamp.nsec;
+        cv::imwrite(output_dir + "/" + ss_sec.str() + ss_nsec.str() + ".png", image);
         printf("\r%lu/%lu (%3.1f%%)", i, total, static_cast<float>(i) / static_cast<float>(total) * 100.f);
     }
     printf("\n%lu images extracted\n", total);
