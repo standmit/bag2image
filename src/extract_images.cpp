@@ -82,41 +82,20 @@ int main(int argc, char **argv) {
 
     const uint64_t total = view.size();
     const double total_f = static_cast<double>(total);
-    uint64_t corrupted = 0;
     uint64_t i = 0;
     const std::string output_dir = vm[OPT_DIRECTORY].as<std::string>();
     for (rosbag::MessageInstance const instance: view) {
         i++;
-        if (compressed) {
-            sensor_msgs::CompressedImage::ConstPtr msg = instance.instantiate<sensor_msgs::CompressedImage>();
-            if (msg != NULL) {
-                cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(msg);
-                std::ostringstream ss_sec, ss_nsec;
-                ss_sec << std::setw(9) << std::setfill('0') << msg->header.stamp.sec;
-                ss_nsec << std::setw(9) << std::setfill('0') << msg->header.stamp.nsec;
-                cv::imwrite(output_dir + "/" + ss_sec.str() + ss_nsec.str() + ".png", cv_image->image);
-            } else {
-                printf("Corrupted message\n");
-                corrupted++;
-                continue;
-            }
-        } else {
-            sensor_msgs::Image::ConstPtr msg = instance.instantiate<sensor_msgs::Image>();
-            if (msg != NULL) {
-                cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(msg);
-                std::ostringstream ss_sec, ss_nsec;
-                ss_sec << std::setw(9) << std::setfill('0') << msg->header.stamp.sec;
-                ss_nsec << std::setw(9) << std::setfill('0') << msg->header.stamp.nsec;
-                cv::imwrite(output_dir + "/" + ss_sec.str() + ss_nsec.str() + ".png", cv_image->image);
-            } else {
-                printf("Corrupted message\n");
-                corrupted++;
-                continue;
-            }
-        }
+        const cv_bridge::CvImagePtr cv_image = compressed ?
+            cv_bridge::toCvCopy(instance.instantiate<sensor_msgs::CompressedImage>()) :
+            cv_bridge::toCvCopy(instance.instantiate<sensor_msgs::Image>());
+        std::ostringstream ss_sec, ss_nsec;
+        ss_sec << std::setw(9) << std::setfill('0') << cv_image->header.stamp.sec;
+        ss_nsec << std::setw(9) << std::setfill('0') << cv_image->header.stamp.nsec;
+        cv::imwrite(output_dir + "/" + ss_sec.str() + ss_nsec.str() + ".png", cv_image->image);
         printf("\r%lu/%lu (%3.1f%%)", i, total, static_cast<float>(i) / static_cast<float>(total) * 100.f);
     }
-    printf("\n%lu images extracted, %lu corrupted\n", total - corrupted, corrupted);
+    printf("\n%lu images extracted\n", total);
 
     bag.close();
     return 0;
