@@ -66,6 +66,10 @@ int main(int argc, char **argv) {
     const std::string topic_name = vm[OPT_TOPIC].as<std::string>();
     topics.emplace_back(topic_name);
     rosbag::View view(bag, rosbag::TopicQuery(topics));
+    if (view.size() == 0) {
+        std::cerr << "There is no [" << topic_name << "] topic in " << vm[OPT_BAG].as<std::string>() << std::endl;
+        return 1;
+    }
     bool compressed;
     {
         const std::string& topic_type = view.begin()->getDataType();
