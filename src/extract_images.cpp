@@ -14,6 +14,7 @@ constexpr char OPT_TOPIC[]     = "topic";
 constexpr char OPT_DIRECTORY[] = "directory";
 constexpr char OPT_BAG[]       = "bag";
 constexpr char OPT_HELP[]      = "help";
+constexpr char OPT_NUM[]       = "num";
 
 
 int main(int argc, char **argv) {
@@ -34,6 +35,7 @@ int main(int argc, char **argv) {
         po::options_description vis_desc("Options");
         vis_desc.add_options()
             (OPT_HELP, "print this message")
+            (OPT_NUM, po::bool_switch(), "use number for filenames (instead of timstamp)")
         ;
 
         po::options_description all_desc("All options");
@@ -95,10 +97,19 @@ int main(int argc, char **argv) {
             sensor_msgs::CompressedImage::ConstPtr msg = instance.instantiate<sensor_msgs::CompressedImage>();
             if (msg != NULL) {
                 cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(msg);
-                std::ostringstream ss_sec, ss_nsec;
-                ss_sec << std::setw(9) << std::setfill('0') << msg->header.stamp.sec;
-                ss_nsec << std::setw(9) << std::setfill('0') << msg->header.stamp.nsec;
-                cv::imwrite(output_dir + "/" + ss_sec.str() + ss_nsec.str() + ".png", cv_image->image);
+                std::string fname;
+                if (vm[OPT_NUM].as<bool>()) {
+                    std::ostringstream ss;
+                    ss << std::setw(5) << std::setfill('0') << i;
+                    fname = ss.str();
+                } else {
+                    std::ostringstream ss_sec, ss_nsec;
+                    ss_sec << std::setw(9) << std::setfill('0') << msg->header.stamp.sec;
+                    ss_nsec << std::setw(9) << std::setfill('0') << msg->header.stamp.nsec;
+                    fname = ss_sec.str() + ss_nsec.str();
+                }
+                fname = output_dir + "/" + fname + ".png";
+                cv::imwrite(fname, cv_image->image);
             } else {
                 printf("Corrupted message\n");
                 corrupted++;
@@ -108,10 +119,19 @@ int main(int argc, char **argv) {
             sensor_msgs::Image::ConstPtr msg = instance.instantiate<sensor_msgs::Image>();
             if (msg != NULL) {
                 cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(msg);
-                std::ostringstream ss_sec, ss_nsec;
-                ss_sec << std::setw(9) << std::setfill('0') << msg->header.stamp.sec;
-                ss_nsec << std::setw(9) << std::setfill('0') << msg->header.stamp.nsec;
-                cv::imwrite(output_dir + "/" + ss_sec.str() + ss_nsec.str() + ".png", cv_image->image);
+                std::string fname;
+                if (vm[OPT_NUM].as<bool>()) {
+                    std::ostringstream ss;
+                    ss << std::setw(5) << std::setfill('0') << i;
+                    fname = ss.str();
+                } else {
+                    std::ostringstream ss_sec, ss_nsec;
+                    ss_sec << std::setw(9) << std::setfill('0') << msg->header.stamp.sec;
+                    ss_nsec << std::setw(9) << std::setfill('0') << msg->header.stamp.nsec;
+                    fname = ss_sec.str() + ss_nsec.str();
+                }
+                fname = output_dir + "/" + fname + ".png";
+                cv::imwrite(fname, cv_image->image);
             } else {
                 printf("Corrupted message\n");
                 corrupted++;
