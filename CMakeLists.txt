@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
     roscpp
     sensor_msgs
     std_msgs
+    tf2_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -203,6 +204,14 @@ target_link_libraries(extract_uint32 ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 add_executable(extract_posewithcovariancestamped src/extract_posewithcovariancestamped.cpp)
 add_dependencies(extract_posewithcovariancestamped ${catkin_EXPORTED_TARGETS})
 target_link_libraries(extract_posewithcovariancestamped ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
+add_executable(extract_pc2 src/extract_pc2.cpp)
+add_dependencies(extract_pc2 ${catkin_EXPORTED_TARGETS})
+target_link_libraries(extract_pc2 ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
+add_executable(exclude_child_frame src/exclude_child_frame.cpp)
+add_dependencies(exclude_child_frame ${catkin_EXPORTED_TARGETS})
+target_link_libraries(exclude_child_frame ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
 #############
 ## Install ##
